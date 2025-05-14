@@ -1,0 +1,65 @@
+name: Build Helm Chart
+
+on:
+  repository_dispatch:
+    types: [build-bot-chart, build-client-chart]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HELM_EXPERIMENTAL_OCI: 1
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Select chart
+        id: chart
+        run: |
+          case "${{ github.event.action }}" in
+            build-bot-chart) echo "chart=bot" >> $GITHUB_OUTPUT ;;
+            build-client-chart) echo "chart=client" >> $GITHUB_OUTPUT ;;
+            *) echo "Unknown chart" && exit 1 ;;
+          esac
+
+      - name: Update values.yaml
+        run: |
+          CHART=${{ steps.chart.outputs.chart }}
+
+          if [[ "${{ github.event.client_payload.image_tag }}" != "" ]]; then
+            echo "Using image.tag = ${{ github.event.client_payload.image_tag }}"
+            yq e ".imageApi.tag = \"${{ github.event.client_payload.image_tag }}\"" -i $CHART/values.yaml
+          fi
+
+          if [[ "${{ github.event.client_payload.scheduler_tag }}" != "" ]]; then
+            echo "Using imageScheduler.tag = ${{ github.event.client_payload.scheduler_tag }}"
+            yq e ".imageScheduler.tag = \"${{ github.event.client_payload.scheduler_tag }}\"" -i $CHART/values.yaml
+          fi
+
+      - name: Bump version
+        run: |
+          VERSION=$(grep '^version:' $CHART/Chart.yaml | awk '{print $2}')
+          PATCH=$(echo $VERSION | awk -F. '{$NF += 1; print}')
+          echo "New version: $PATCH"
+          sed -i "s/^version: .*/version: $PATCH/" $CHART/Chart.yaml
+
+      - name: Package chart
+        run: |
+          helm package ${{ steps.chart.outputs.chart }}
+
+      - name: Push to registry (OCI example)
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }} docker.io
+          helm push ${{ steps.chart.outputs.chart }}-*.tgz oci://docker.io/${{ secrets.DOCKER_HUB_USERNAME }}
+
+      - name: Commit and push updated values.yaml
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          git add $CHART/values.yaml
+          git commit -m "Update values for $CHART (tags: image=${{ github.event.client_payload.image_tag }}, scheduler=${{ github.event.client_payload.scheduler_tag }})"
+          git push origin main

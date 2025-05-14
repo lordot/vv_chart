@@ -6,13 +6,13 @@ imageApi:
   repository: lordot/vv_api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "1.2.1"
 
 imageScheduler:
   repository: lordot/vv_scheduler
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "1.1.4"
 
 imagePullSecrets: []
 nameOverride: ""
