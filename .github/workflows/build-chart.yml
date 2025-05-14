@@ -31,7 +31,7 @@ jobs:
 
           if [[ "${{ github.event.client_payload.image_tag }}" != "" ]]; then
             echo "Using image.tag = ${{ github.event.client_payload.image_tag }}"
-            yq e ".imageApi.tag = \"${{ github.event.client_payload.image_tag }}\"" -i $CHART/values.yaml
+            yq e ".image.tag = \"${{ github.event.client_payload.image_tag }}\"" -i $CHART/values.yaml
           fi
 
           if [[ "${{ github.event.client_payload.scheduler_tag }}" != "" ]]; then
