@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: api-{{ .Release.Name }}
+  labels:
+    {{- include "client.labels" . | nindent 4 }}
+spec:
+  serviceName: api-{{ .Release.Name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "client.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "client.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "client.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: api
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.imageApi.repository }}:{{ .Values.imageApi.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.imageApi.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- range $key, $val := .Values.envAPIMap }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: scheduler
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.imageScheduler.repository }}:{{ .Values.imageScheduler.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.imageScheduler.pullPolicy }}
+          command: [ "sh", "-c", "until wget -qO- http://127.0.0.1:8001/health > /dev/null; do echo 'Waiting for api...'; sleep 20; done; echo 'api is ready'; exec python grab.py" ]
+          env:
+            {{- range $key, $val := .Values.envSchedulerMap }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            - name: CHAT_ID
+              value: {{ .Release.Name }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-{{ .Release.Name }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
