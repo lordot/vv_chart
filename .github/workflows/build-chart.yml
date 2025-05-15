@@ -60,8 +60,4 @@ jobs:
           helm registry login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }} docker.io
           helm push ${{ steps.chart.outputs.chart }}-*.tgz oci://docker.io/${{ secrets.DOCKER_HUB_USERNAME }}
 
-      - name: Commit & Push changes
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.PAT_FOR_PUSH }}
-          branch: master
+      - uses: stefanzweifel/git-auto-commit-action@v5
