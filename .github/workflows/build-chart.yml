@@ -46,9 +46,10 @@ jobs:
           CHART="${{ steps.chart.outputs.chart }}"
           echo "Chart directory: $CHART"
           VERSION=$(grep '^version:' $CHART/Chart.yaml | awk '{print $2}')
-          PATCH=$(echo $VERSION | awk -F. '{$NF += 1; print}')
+          PATCH=$(echo $VERSION | awk -F. '{printf "%s.%s.%s\n", $1, $2, $3+1}')
           echo "New version: $PATCH"
           sed -i "s/^version: .*/version: $PATCH/" $CHART/Chart.yaml
+
 
       - name: Package chart
         run: |
