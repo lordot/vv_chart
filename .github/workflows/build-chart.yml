@@ -15,14 +15,16 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Select chart
         id: chart
         run: |
-          case "${{ github.client_payload.chart }}" in
-            build-bot-chart) echo "chart=bot" >> $GITHUB_OUTPUT ;;
-            build-client-chart) echo "chart=client" >> $GITHUB_OUTPUT ;;
-            *) echo "Unknown chart" && exit 1 ;;
+          case "${{ github.event.client_payload.chart }}" in
+            bot) echo "chart=bot" >> $GITHUB_OUTPUT ;;
+            client) echo "chart=client" >> $GITHUB_OUTPUT ;;
+            *) echo "Unknown chart"; exit 1 ;;
           esac
 
       - name: Update values.yaml
