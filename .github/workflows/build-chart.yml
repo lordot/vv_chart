@@ -64,7 +64,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
           git add $CHART/values.yaml
           git commit -m "Update values for $CHART (tags: image=${{ github.event.client_payload.image_tag }}, scheduler=${{ github.event.client_payload.scheduler_tag }})"
           git push origin main
