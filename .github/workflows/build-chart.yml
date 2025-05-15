@@ -19,7 +19,7 @@ jobs:
       - name: Select chart
         id: chart
         run: |
-          case "${{ github.event.action }}" in
+          case "${{ github.client_payload.chart }}" in
             build-bot-chart) echo "chart=bot" >> $GITHUB_OUTPUT ;;
             build-client-chart) echo "chart=client" >> $GITHUB_OUTPUT ;;
             *) echo "Unknown chart" && exit 1 ;;
@@ -41,6 +41,8 @@ jobs:
 
       - name: Bump version
         run: |
+          CHART="${{ steps.chart.outputs.chart }}"
+          echo "Chart directory: $CHART"
           VERSION=$(grep '^version:' $CHART/Chart.yaml | awk '{print $2}')
           PATCH=$(echo $VERSION | awk -F. '{$NF += 1; print}')
           echo "New version: $PATCH"
