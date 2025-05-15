@@ -61,9 +61,14 @@ jobs:
           helm push ${{ steps.chart.outputs.chart }}-*.tgz oci://docker.io/${{ secrets.DOCKER_HUB_USERNAME }}
 
       - name: Commit and push updated values.yaml
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_FOR_PUSH }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+          git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/${{ github.repository }}
+      
           git add ${{ steps.chart.outputs.chart }}/values.yaml
           git commit -m "Update values for ${{ steps.chart.outputs.chart }} (tags: image=${{ github.event.client_payload.image_tag }}, scheduler=${{ github.event.client_payload.scheduler_tag }})"
-          git push
+          git push origin ${{ github.ref_name }}
