@@ -61,3 +61,5 @@ jobs:
           helm push ${{ steps.chart.outputs.chart }}-*.tgz oci://docker.io/${{ secrets.DOCKER_HUB_USERNAME }}
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: '*.yml'
