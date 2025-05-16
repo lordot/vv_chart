@@ -7,7 +7,7 @@ image:
   repository: lordot/vv_bot
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.2.3"
+  tag: "v1.2.4"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
