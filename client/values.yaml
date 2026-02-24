@@ -86,9 +86,10 @@ envAPIMap:
   DEBUG: 'False'
   CHROME_URL: 'http://selenium-grid-selenium-hub.selenium.svc.cluster.local:4444/wd/hub'
 
+secretName: vv-secrets
+
 envSchedulerMap:
   API_URL: localhost
   TIMEOUT: '300'
-  TOKEN: ''
 
 pvcSize: 1Gi

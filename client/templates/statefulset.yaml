@@ -26,7 +26,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "client.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -34,7 +33,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.imageApi.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -66,7 +65,12 @@ spec:
               value: {{ $val | quote }}
             {{- end }}
             - name: CHAT_ID
-              value: {{ .Release.Name }}
+              value: {{ .Release.Name | quote }}
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: BOT_TOKEN
       volumes:
         - name: data
           persistentVolumeClaim:

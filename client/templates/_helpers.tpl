@@ -47,7 +47,7 @@ Selector labels
 */}}
 {{- define "client.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "client.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
