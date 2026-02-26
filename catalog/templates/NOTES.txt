@@ -1,0 +1,2 @@
+VkusVill Catalog Scraper deployed.
+Runs continuously, scraping catalog into PostgreSQL.

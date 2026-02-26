@@ -1,0 +1,23 @@
+image:
+  repository: lordot/vv_catalog
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+imagePullSecrets: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+envMap:
+  DB_URL: "postgresql+psycopg2://vv:vv@postgres:5432/vv_catalog"
+
+secretName: vv-secrets
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
